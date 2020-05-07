@@ -5,7 +5,7 @@
 using namespace testing;
 using namespace QIEC60870::p101;
 
-TEST(LinkLayerFrameCodec, decode_works_well) {
+TEST(LinkLayer, frame_decode_works_well) {
   struct TestCase {
     std::vector<uint8_t> data;
     uint8_t ctrlDomain;
