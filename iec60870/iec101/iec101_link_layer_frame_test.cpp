@@ -57,3 +57,12 @@ TEST(LinkLayer, frame_decode_works_well) {
     }
   }
 }
+
+TEST(LinkLayer, ctrlDomain_check_workswell) {
+  CtrlDomain c(0x53); /// 0101,0011
+
+  EXPECT_EQ(c.isFromStartupStation(), true);
+  EXPECT_EQ(c.isValidFCB(), true);
+  EXPECT_EQ(c.fcb(), false);
+  EXPECT_EQ(c.functionCode(), static_cast<int>(StartupFunction::kSendUserData));
+}
