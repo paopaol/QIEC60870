@@ -79,7 +79,7 @@ private:
 class LinkLayerFrameCodec {
   enum State {
     kStart,
-    kStart68,
+    kSecond68,
     kCtrlDomain,
     kAddressOffset0,
     kLengthOffset0,
@@ -120,13 +120,20 @@ public:
         state_ = kAddressOffset0;
       } break;
       case kLengthOffset0: {
-
+        length_[0] = ch;
+        state_ = kLengthOffset1;
       } break;
       case kLengthOffset1: {
-
+        length_[1] = ch;
+        state_ = kSecond68;
       } break;
-      case kStart68: {
-
+      case kSecond68: {
+        if (ch != 0x68) {
+          err_ = FrameParseErr::kBadFormat;
+          state_ = kDone;
+        } else {
+          state_ = kCtrlDomain;
+        }
       } break;
       case kAddressOffset0: {
         address_ = ch;
@@ -134,6 +141,9 @@ public:
       } break;
       case kAsdu: {
         asdu_.push_back(ch);
+        if (length_[0] == asdu_.size() + 2) {
+          state_ = kCs;
+        }
       } break;
       case kCs: {
         cs_ = ch;
