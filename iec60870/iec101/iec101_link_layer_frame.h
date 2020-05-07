@@ -1,0 +1,202 @@
+#ifndef IEC_APDU_H
+#define IEC_APDU_H
+
+#include <vector>
+
+namespace QIEC60870 {
+namespace p101 {
+enum class FrameParseErr {
+  kNoError = 0,
+  kNeedMoreData = 1,
+  kBadFormat = 2,
+  kCheckError = 3
+};
+
+enum class PRM { kFromStartupStation = 1, kfromSlaveStation = 0 };
+enum class DIR { kFromMasterStation = 0, kFromSlaveStation = 1 };
+enum class FCV { kFCBValid = 1, kFCBInvalid = 0 };
+enum class ACD { kLevel1DataWatingAccess = 1, kLevel1NoDataWatingAccess = 0 };
+enum class DFC { kSlaveCannotRecv = 1, kSlaveCanRecv = 0 };
+
+enum class StartupFunction {
+  kResetRemoteLink = 0,
+  kSendLinkStatus = 2,
+  kSendUserData = 3,
+  kSendNoanswerUserData = 4,
+  kAccessRequest = 8,
+  kRequestLinkStatus = 9,
+  kRequestLevel1UserData = 10,
+  kRequestLevel2UserData = 11,
+};
+enum class SlaveFunction {
+  kConfirmedRecognized = 0,
+  kConfirmedRejected = 1,
+  kResponseUserData = 8,
+  kResponseNotFoundUserData = 9,
+  kResponseLinkStatus = 11,
+};
+
+const int kInvalidA = 0x00;
+const int kBroadcastA = 0xffff;
+
+class CtrlDomain {
+public:
+  CtrlDomain(uint8_t c) : C(c) {}
+  CtrlDomain() = default;
+  ~CtrlDomain() = default;
+
+  bool isFromStartupStation() const { return ((C & 0x40) >> 6); }
+  bool isFromMasterStation() const { return !((C & 0x80) >> 7); }
+  bool fcb() const { return ((C & 0x20) >> 5); }
+  bool hasLevel1DataWatingAccess() const { return ((C & 20) >> 5); }
+  bool isValidFCB() const { return ((C & 0x10) >> 4); }
+  bool isSlaveCannotRecv() const { return ((C & 0x10) >> 4); }
+  int functionCode() const { return C & 0x0f; }
+
+  uint8_t raw() const { return C; }
+
+private:
+  ///控制域
+  uint8_t C;
+};
+
+class LinkLayerFrame {
+public:
+  LinkLayerFrame() = default;
+  ~LinkLayerFrame() = default;
+
+  LinkLayerFrame(uint8_t c, uint16_t a, const std::vector<uint8_t> &asdu)
+      : C(c), A(a), asdu_(asdu) {}
+
+  CtrlDomain c() const { return CtrlDomain(C); }
+
+private:
+  uint8_t C;
+  uint16_t A;
+  std::vector<uint8_t> asdu_;
+};
+
+class LinkLayerFrameCodec {
+  enum State {
+    kStart,
+    kStart68,
+    kCtrlDomain,
+    kAddressOffset0,
+    kLengthOffset0,
+    kLengthOffset1,
+    kAsdu,
+    kCs,
+    kEnd,
+    kDone
+  };
+
+public:
+  /**
+   * @brief decode decode raw data,
+   * parse ctrlDomain,address,asdu
+   * after decode, if the error()is FrameParseErr::kNoError,
+   * then can call toLinkLayerFrame()
+   *
+   * @param data
+   */
+  void decode(const std::vector<uint8_t> &data) {
+    for (const auto &ch : data) {
+      data_.push_back(ch);
+      switch (state_) {
+      case kStart: {
+        if (ch == 0x10) {
+          isFixedFrame_ = true;
+          state_ = kCtrlDomain;
+        } else if (ch == 0x68) {
+          isFixedFrame_ = false;
+          state_ = kLengthOffset0;
+        } else {
+          err_ = FrameParseErr::kBadFormat;
+          state_ = kDone;
+        }
+      } break;
+      case kCtrlDomain: {
+        ctrlDomain_ = ch;
+        state_ = kAddressOffset0;
+      } break;
+      case kLengthOffset0: {
+
+      } break;
+      case kLengthOffset1: {
+
+      } break;
+      case kStart68: {
+
+      } break;
+      case kAddressOffset0: {
+        address_ = ch;
+        state_ = isFixedFrame_ ? kCs : kAsdu;
+      } break;
+      case kAsdu: {
+        asdu_.push_back(ch);
+      } break;
+      case kCs: {
+        cs_ = ch;
+        state_ = kEnd;
+      } break;
+      case kEnd: {
+        err_ = ch == 0x16 ? FrameParseErr::kNoError : FrameParseErr::kBadFormat;
+        state_ = kDone;
+      } break;
+      case kDone: {
+
+      } break;
+      }
+
+      if (state_ == kDone) {
+        break;
+      }
+    }
+    if (err_ == FrameParseErr::kNoError) {
+      uint8_t cs = calculateCs_();
+      if (cs != cs_) {
+        err_ = FrameParseErr::kCheckError;
+      }
+    }
+  }
+
+  /**
+   * @brief if isDone( is true, then can call
+   * error() to check decode is failed or successed,
+   * if decode is successed, the can call toLinkLayerFrame(
+   *
+   * @return
+   */
+  FrameParseErr error() { return err_; }
+  LinkLayerFrame toLinkLayerFrame() const {
+    return LinkLayerFrame(ctrlDomain_, 3, asdu_);
+  }
+
+private:
+  uint8_t calculateCs_() {
+    uint8_t cs = 0;
+    cs += ctrlDomain_;
+    cs += address_;
+    for (const auto &ch : asdu_) {
+      cs += ch;
+    }
+    return cs;
+  }
+
+  uint8_t ctrlDomain_;
+  uint8_t address_;
+  uint8_t length_[2];
+  uint8_t cs_;
+  std::vector<uint8_t> asdu_;
+
+  /// internal
+  FrameParseErr err_ = FrameParseErr::kNeedMoreData;
+  bool isFixedFrame_ = false;
+  std::vector<uint8_t> data_;
+  State state_ = kStart;
+};
+
+} // namespace p101
+} // namespace QIEC60870
+
+#endif
