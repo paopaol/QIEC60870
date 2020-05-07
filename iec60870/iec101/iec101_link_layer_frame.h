@@ -39,11 +39,13 @@ enum class SlaveFunction {
 const int kInvalidA = 0x00;
 const int kBroadcastA = 0xffff;
 
-class CtrlDomain {
+class LinkLayerFrame {
 public:
-  CtrlDomain(uint8_t c) : C(c) {}
-  CtrlDomain() = default;
-  ~CtrlDomain() = default;
+  LinkLayerFrame() = default;
+  ~LinkLayerFrame() = default;
+
+  LinkLayerFrame(uint8_t c, uint16_t a, const std::vector<uint8_t> &asdu)
+      : C(c), A(a), asdu_(asdu) {}
 
   bool isFromStartupStation() const { return ((C & 0x40) >> 6); }
   bool isFromMasterStation() const { return !((C & 0x80) >> 7); }
@@ -53,22 +55,14 @@ public:
   bool isSlaveCannotRecv() const { return ((C & 0x10) >> 4); }
   int functionCode() const { return C & 0x0f; }
 
-  uint8_t raw() const { return C; }
+  uint8_t ctrlDomain() const { return C; }
 
-private:
-  ///控制域
-  uint8_t C;
-};
-
-class LinkLayerFrame {
-public:
-  LinkLayerFrame() = default;
-  ~LinkLayerFrame() = default;
-
-  LinkLayerFrame(uint8_t c, uint16_t a, const std::vector<uint8_t> &asdu)
-      : C(c), A(a), asdu_(asdu) {}
-
-  CtrlDomain c() const { return CtrlDomain(C); }
+  /**
+   * @brief if asdu is empty, that is, it's a fixed frame
+   *
+   * @return
+   */
+  bool hasAsdu() { return !asdu_.empty(); }
 
 private:
   uint8_t C;

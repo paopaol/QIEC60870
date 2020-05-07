@@ -53,16 +53,43 @@ TEST(LinkLayer, frame_decode_works_well) {
 
     if (codec.error() == FrameParseErr::kNoError) {
       frame = codec.toLinkLayerFrame();
-      EXPECT_EQ(frame.c().raw(), test.ctrlDomain);
+      EXPECT_EQ(frame.ctrlDomain(), test.ctrlDomain);
     }
   }
 }
 
-TEST(LinkLayer, ctrlDomain_check_workswell) {
-  CtrlDomain c(0x53); /// 0101,0011
+TEST(LinkLayer, frame_toLinkLayerFrame_workswell) {
+  struct TestCase {
+    std::vector<uint8_t> data;
+    bool hasAsdu;
+    std::string name;
+  };
 
-  EXPECT_EQ(c.isFromStartupStation(), true);
-  EXPECT_EQ(c.isValidFCB(), true);
-  EXPECT_EQ(c.fcb(), false);
-  EXPECT_EQ(c.functionCode(), static_cast<int>(StartupFunction::kSendUserData));
+  std::vector<TestCase> cases = {
+      {{0x10, 0x5a, 0x01, 0x5b, 0x16}, false, "case0"},
+      {{0x68, 0x09, 0x09, 0x68, 0x08, 0x01, 0x46, 0x01, 0x04, 0x01, 0x00, 0x00,
+        0x00, 0x55, 0x16},
+       true,
+       "case5"}};
+
+  for (const auto &test : cases) {
+    LinkLayerFrame frame;
+    LinkLayerFrameCodec codec;
+
+    codec.decode(test.data);
+    EXPECT_EQ(codec.error(), FrameParseErr::kNoError);
+
+    frame = codec.toLinkLayerFrame();
+    EXPECT_EQ(frame.hasAsdu(), test.hasAsdu);
+  }
+}
+
+TEST(LinkLayer, frame_ctrlDomain_check_workswell) {
+  LinkLayerFrame frame(0x53 /*0101,0011*/, kInvalidA, {});
+
+  EXPECT_EQ(frame.isFromStartupStation(), true);
+  EXPECT_EQ(frame.isValidFCB(), true);
+  EXPECT_EQ(frame.fcb(), false);
+  EXPECT_EQ(frame.functionCode(),
+            static_cast<int>(StartupFunction::kSendUserData));
 }
