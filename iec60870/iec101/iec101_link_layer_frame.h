@@ -44,7 +44,8 @@ public:
   LinkLayerFrame() = default;
   ~LinkLayerFrame() = default;
 
-  LinkLayerFrame(uint8_t c, uint16_t a, const std::vector<uint8_t> &asdu)
+  LinkLayerFrame(uint8_t c, uint16_t a,
+                 const std::vector<uint8_t> &asdu = std::vector<uint8_t>())
       : C(c), A(a), asdu_(asdu) {}
 
   bool isFromStartupStation() const { return ((C & 0x40) >> 6); }
@@ -66,7 +67,7 @@ public:
 
 private:
   uint8_t C;
-  uint16_t A;
+  uint16_t A = kInvalidA;
   std::vector<uint8_t> asdu_;
 };
 
