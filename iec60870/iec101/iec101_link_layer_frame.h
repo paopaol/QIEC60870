@@ -14,6 +14,7 @@ enum class FrameParseErr {
 
 enum class PRM { kFromStartupStation = 1, kfromSlaveStation = 0 };
 enum class DIR { kFromMasterStation = 0, kFromSlaveStation = 1 };
+enum class FCB { k0, k1 };
 enum class FCV { kFCBValid = 1, kFCBInvalid = 0 };
 enum class ACD { kLevel1DataWatingAccess = 1, kLevel1NoDataWatingAccess = 0 };
 enum class DFC { kSlaveCannotRecv = 1, kSlaveCanRecv = 0 };
@@ -52,13 +53,56 @@ public:
                  const std::vector<uint8_t> &asdu = std::vector<uint8_t>())
       : C(c), A(a), asdu_(asdu) {}
 
+  /**
+   * @brief PRM
+   *
+   * @return
+   */
   bool isFromStartupStation() const { return ((C & 0x40) >> 6); }
+  /**
+   * @brief DIR
+   *
+   * @return
+   */
   bool isFromMasterStation() const { return !((C & 0x80) >> 7); }
+  /**
+   * @brief FCB
+   *
+   * @return
+   */
   bool fcb() const { return ((C & 0x20) >> 5); }
+  /**
+   * @brief ACD
+   *
+   * @return
+   */
   bool hasLevel1DataWatingAccess() const { return ((C & 20) >> 5); }
+  /**
+   * @brief FCV
+   *
+   * @return
+   */
   bool isValidFCB() const { return ((C & 0x10) >> 4); }
+  /**
+   * @brief DFC
+   *
+   * @return
+   */
   bool isSlaveCannotRecv() const { return ((C & 0x10) >> 4); }
+  /**
+   * @brief FC
+   *
+   * @return
+   */
   int functionCode() const { return C & 0x0f; }
+
+  void setPRM(PRM prm) {}
+  void setDIR(DIR dir) {}
+  void setFCB(FCB fcb) {}
+  void setACD(ACD acd) {}
+  void setFCV(FCV fcv) {}
+  void setDFC(DFC dfc) {}
+  void setFC(int fc) {}
 
   uint8_t ctrlDomain() const { return C; }
 
@@ -68,6 +112,9 @@ public:
    * @return
    */
   bool hasAsdu() { return !asdu_.empty(); }
+
+  std::vector<uint8_t> asdu() const { return asdu_; }
+  int address() const { return A; }
 
   std::vector<uint8_t> encode() {
     bool isFixedFrame = asdu_.empty();
