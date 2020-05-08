@@ -125,7 +125,15 @@ public:
     C &= 0xef;
     C |= (dfc == DFC::kSlaveCannotRecv ? 0x10 : 0x00);
   }
-  void setFC(int fc) {}
+  /**
+   * @brief fc is StartupFunction/SlaveFunction
+   *
+   * @param fc
+   */
+  void setFC(int fc) {
+    C &= 0xf0;
+    C |= fc;
+  }
 
   uint8_t ctrlDomain() const { return C; }
 

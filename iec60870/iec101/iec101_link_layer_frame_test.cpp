@@ -171,3 +171,24 @@ TEST(LinkLayer, frame_setDFC) {
   frame.setDFC(DFC::kSlaveCanRecv);
   EXPECT_EQ(frame.isSlaveCannotRecv(), false);
 }
+
+TEST(LinkLayer, frame_setFC) {
+  LinkLayerFrame frame;
+
+  frame.setFC(static_cast<int>(StartupFunction::kAccessRequest));
+  EXPECT_EQ(frame.functionCode(),
+            static_cast<int>(StartupFunction::kAccessRequest));
+}
+
+TEST(LinkLayer, frame_ctrlDomain_set) {
+  LinkLayerFrame frame;
+
+  /// 0111 1000 <===> 0x78
+  frame.setPRM(PRM::kFromStartupStation);
+  frame.setFCB(FCB::k1);
+  frame.setFCV(FCV::kFCBValid);
+  frame.setFC(static_cast<int>(StartupFunction::kAccessRequest));
+
+  uint8_t c = frame.ctrlDomain();
+  EXPECT_EQ(c, 0x78);
+}
