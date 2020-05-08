@@ -112,11 +112,20 @@ TEST(LinkLayer, frame_ctrlDomain_check_workswell) {
   EXPECT_EQ(frame.hasAsdu(), false);
 }
 
-TEST(LinkLayer, frame_ctrlDomain_set_wrokswell) {
+TEST(LinkLayer, frame_setPRM) {
   LinkLayerFrame frame;
 
   frame.setPRM(PRM::kFromStartupStation);
   EXPECT_EQ(frame.isFromStartupStation(), true);
   frame.setPRM(PRM::kFromSlaveStation);
   EXPECT_EQ(frame.isFromStartupStation(), false);
+}
+
+TEST(LinkLayer, frame_setDIR) {
+  LinkLayerFrame frame;
+
+  frame.setDIR(DIR::kFromMasterStation);
+  EXPECT_EQ(frame.isFromMasterStation(), true);
+  frame.setDIR(DIR::kFromSlaveStation);
+  EXPECT_EQ(frame.isFromMasterStation(), false);
 }

@@ -101,7 +101,10 @@ public:
     C |= (prm == PRM::kFromStartupStation ? 0x40 : 0x00);
   }
 
-  void setDIR(DIR dir) {}
+  void setDIR(DIR dir) {
+    C &= 0x7f;
+    C |= (dir == DIR::kFromMasterStation ? 0x00 : 0x80);
+  }
   void setFCB(FCB fcb) {}
   void setACD(ACD acd) {}
   void setFCV(FCV fcv) {}
