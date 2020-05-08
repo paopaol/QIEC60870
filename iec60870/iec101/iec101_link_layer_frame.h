@@ -75,6 +75,20 @@ public:
       raw.push_back(C + A); /// cs
       raw.push_back(0x16);
     } else {
+      raw.push_back(0x68);
+      uint8_t len = 2 + asdu_.size();
+      raw.push_back(len);
+      raw.push_back(len);
+      raw.push_back(0x68);
+      raw.push_back(C);
+      raw.push_back(static_cast<uint8_t>(A));
+      raw.insert(raw.end(), asdu_.begin(), asdu_.end());
+      uint8_t cs = C + A;
+      for (const auto &ch : asdu_) {
+        cs += ch;
+      }
+      raw.push_back(cs);
+      raw.push_back(0x16);
     }
     return raw;
   }

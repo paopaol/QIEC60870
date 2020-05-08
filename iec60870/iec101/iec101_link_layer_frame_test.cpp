@@ -12,6 +12,16 @@ TEST(LinkLayer, frame_encode_fixedframe) {
   EXPECT_THAT(raw, ElementsAre(0x10, 0x5a, 0x01, 0x5b, 0x16));
 }
 
+TEST(LinkLayer, frame_encode_variableframe) {
+  LinkLayerFrame variableFrame(
+      0x08, 0x01,
+      std::vector<uint8_t>(
+          {0x46, 0x01, 0x04, 0x01, 0x00, 0x00, 0x00}) /*asdu*/);
+  auto raw = variableFrame.encode();
+  EXPECT_THAT(raw, ElementsAre(0x68, 0x09, 0x09, 0x68, 0x08, 0x01, 0x46, 0x01,
+                               0x04, 0x01, 0x00, 0x00, 0x00, 0x55, 0x16));
+}
+
 TEST(LinkLayer, frame_decode_works_well) {
   struct TestCase {
     std::vector<uint8_t> data;
