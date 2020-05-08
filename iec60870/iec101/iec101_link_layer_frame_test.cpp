@@ -1,9 +1,16 @@
 #include "iec101_link_layer_frame.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 using namespace testing;
 using namespace QIEC60870::p101;
+
+TEST(LinkLayer, frame_encode_fixedframe) {
+  LinkLayerFrame fixedFrame(0x5a, 0x01);
+  auto raw = fixedFrame.encode();
+  EXPECT_THAT(raw, ElementsAre(0x10, 0x5a, 0x01, 0x5b, 0x16));
+}
 
 TEST(LinkLayer, frame_decode_works_well) {
   struct TestCase {

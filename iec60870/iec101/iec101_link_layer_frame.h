@@ -65,6 +65,20 @@ public:
    */
   bool hasAsdu() { return !asdu_.empty(); }
 
+  std::vector<uint8_t> encode() {
+    bool isFixedFrame = asdu_.empty();
+    std::vector<uint8_t> raw;
+    if (isFixedFrame) {
+      raw.push_back(0x10);
+      raw.push_back(C);
+      raw.push_back(static_cast<uint8_t>(A));
+      raw.push_back(C + A); /// cs
+      raw.push_back(0x16);
+    } else {
+    }
+    return raw;
+  }
+
 private:
   uint8_t C;
   uint16_t A = kInvalidA;
