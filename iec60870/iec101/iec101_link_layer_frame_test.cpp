@@ -109,4 +109,5 @@ TEST(LinkLayer, frame_ctrlDomain_check_workswell) {
   EXPECT_EQ(frame.fcb(), false);
   EXPECT_EQ(frame.functionCode(),
             static_cast<int>(StartupFunction::kSendUserData));
+  EXPECT_EQ(frame.hasAsdu(), false);
 }
