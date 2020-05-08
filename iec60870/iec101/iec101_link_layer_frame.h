@@ -105,7 +105,12 @@ public:
     C &= 0x7f;
     C |= (dir == DIR::kFromMasterStation ? 0x00 : 0x80);
   }
-  void setFCB(FCB fcb) {}
+
+  void setFCB(FCB fcb) {
+    C &= 0xdf;
+    C |= (fcb == FCB::k0 ? 0x00 : 0x20);
+  }
+
   void setACD(ACD acd) {}
   void setFCV(FCV fcv) {}
   void setDFC(DFC dfc) {}

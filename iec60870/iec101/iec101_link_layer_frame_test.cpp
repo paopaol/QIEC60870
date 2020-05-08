@@ -117,6 +117,7 @@ TEST(LinkLayer, frame_setPRM) {
 
   frame.setPRM(PRM::kFromStartupStation);
   EXPECT_EQ(frame.isFromStartupStation(), true);
+
   frame.setPRM(PRM::kFromSlaveStation);
   EXPECT_EQ(frame.isFromStartupStation(), false);
 }
@@ -126,6 +127,17 @@ TEST(LinkLayer, frame_setDIR) {
 
   frame.setDIR(DIR::kFromMasterStation);
   EXPECT_EQ(frame.isFromMasterStation(), true);
+
   frame.setDIR(DIR::kFromSlaveStation);
   EXPECT_EQ(frame.isFromMasterStation(), false);
+}
+
+TEST(LinkLayer, frame_setFCB) {
+  LinkLayerFrame frame;
+
+  frame.setFCB(FCB::k0);
+  EXPECT_EQ(frame.fcb(), false);
+
+  frame.setFCB(FCB::k1);
+  EXPECT_EQ(frame.fcb(), true);
 }
