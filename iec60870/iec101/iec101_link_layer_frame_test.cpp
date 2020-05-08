@@ -65,7 +65,7 @@ TEST(LinkLayer, frame_decode_works_well) {
   }
 }
 
-TEST(LinkLayer, frame_toLinkLayerFrame_workswell) {
+TEST(LinkLayer, frameCodec_toLinkLayerFrame_workswell) {
   struct TestCase {
     std::vector<uint8_t> data;
     bool hasAsdu;
