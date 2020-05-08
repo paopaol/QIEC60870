@@ -76,7 +76,7 @@ public:
    *
    * @return
    */
-  bool hasLevel1DataWatingAccess() const { return ((C & 20) >> 5); }
+  bool hasLevel1DataWatingAccess() const { return ((C & 0x20) >> 5); }
   /**
    * @brief FCV
    *
@@ -111,7 +111,11 @@ public:
     C |= (fcb == FCB::k0 ? 0x00 : 0x20);
   }
 
-  void setACD(ACD acd) {}
+  void setACD(ACD acd) {
+    C &= 0xdf;
+    C |= (acd == ACD::kLevel1DataWatingAccess ? 0x20 : 0x00);
+  }
+
   void setFCV(FCV fcv) {}
   void setDFC(DFC dfc) {}
   void setFC(int fc) {}
