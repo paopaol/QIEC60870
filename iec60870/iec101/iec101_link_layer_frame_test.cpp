@@ -151,3 +151,13 @@ TEST(LinkLayer, frame_setACD) {
   frame.setACD(ACD::kLevel1NoDataWatingAccess);
   EXPECT_EQ(frame.hasLevel1DataWatingAccess(), false);
 }
+
+TEST(LinkLayer, frame_setFCV) {
+  LinkLayerFrame frame;
+
+  frame.setFCV(FCV::kFCBValid);
+  EXPECT_EQ(frame.isValidFCB(), true);
+
+  frame.setFCV(FCV::kFCBInvalid);
+  EXPECT_EQ(frame.isValidFCB(), false);
+}

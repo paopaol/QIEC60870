@@ -116,7 +116,11 @@ public:
     C |= (acd == ACD::kLevel1DataWatingAccess ? 0x20 : 0x00);
   }
 
-  void setFCV(FCV fcv) {}
+  void setFCV(FCV fcv) {
+    C &= 0xef;
+    C |= (fcv == FCV::kFCBValid ? 0x10 : 0x00);
+  }
+
   void setDFC(DFC dfc) {}
   void setFC(int fc) {}
 
