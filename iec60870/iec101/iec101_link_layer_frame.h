@@ -39,6 +39,10 @@ enum class SlaveFunction {
 const int kInvalidA = 0x00;
 const int kBroadcastA = 0xffff;
 
+/**
+ * @brief Can describe both fixed frames and variable-length frames
+ * if asdu_ is empty, it's a fixed frame, otherwise it's a variable frame
+ */
 class LinkLayerFrame {
 public:
   LinkLayerFrame() = default;
