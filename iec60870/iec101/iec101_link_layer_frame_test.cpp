@@ -161,3 +161,13 @@ TEST(LinkLayer, frame_setFCV) {
   frame.setFCV(FCV::kFCBInvalid);
   EXPECT_EQ(frame.isValidFCB(), false);
 }
+
+TEST(LinkLayer, frame_setDFC) {
+  LinkLayerFrame frame;
+
+  frame.setDFC(DFC::kSlaveCannotRecv);
+  EXPECT_EQ(frame.isSlaveCannotRecv(), true);
+
+  frame.setDFC(DFC::kSlaveCanRecv);
+  EXPECT_EQ(frame.isSlaveCannotRecv(), false);
+}
