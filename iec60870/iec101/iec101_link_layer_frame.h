@@ -12,7 +12,7 @@ enum class FrameParseErr {
   kCheckError = 3
 };
 
-enum class PRM { kFromStartupStation = 1, kfromSlaveStation = 0 };
+enum class PRM { kFromStartupStation = 1, kFromSlaveStation = 0 };
 enum class DIR { kFromMasterStation = 0, kFromSlaveStation = 1 };
 enum class FCB { k0, k1 };
 enum class FCV { kFCBValid = 1, kFCBInvalid = 0 };
@@ -96,7 +96,11 @@ public:
    */
   int functionCode() const { return C & 0x0f; }
 
-  void setPRM(PRM prm) {}
+  void setPRM(PRM prm) {
+    C &= 0xbf;
+    C |= (prm == PRM::kFromStartupStation ? 0x40 : 0x00);
+  }
+
   void setDIR(DIR dir) {}
   void setFCB(FCB fcb) {}
   void setACD(ACD acd) {}
@@ -145,7 +149,7 @@ public:
   }
 
 private:
-  uint8_t C;
+  uint8_t C = 0x00;
   uint16_t A = kInvalidA;
   std::vector<uint8_t> asdu_;
 };

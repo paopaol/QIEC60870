@@ -111,3 +111,12 @@ TEST(LinkLayer, frame_ctrlDomain_check_workswell) {
             static_cast<int>(StartupFunction::kSendUserData));
   EXPECT_EQ(frame.hasAsdu(), false);
 }
+
+TEST(LinkLayer, frame_ctrlDomain_set_wrokswell) {
+  LinkLayerFrame frame;
+
+  frame.setPRM(PRM::kFromStartupStation);
+  EXPECT_EQ(frame.isFromStartupStation(), true);
+  frame.setPRM(PRM::kFromSlaveStation);
+  EXPECT_EQ(frame.isFromStartupStation(), false);
+}
