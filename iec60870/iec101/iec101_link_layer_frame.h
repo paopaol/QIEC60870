@@ -232,6 +232,7 @@ public:
           state_ = kLengthOffset0;
         } else if (ch == 0xe5) {
           isE5Frame_ = true;
+          isFixedFrame_ = false;
           err_ = FrameParseErr::kNoError;
           state_ = kDone;
         } else {
@@ -291,7 +292,7 @@ public:
         break;
       }
     }
-    if (err_ == FrameParseErr::kNoError) {
+    if (err_ == FrameParseErr::kNoError && !isE5Frame_) {
       uint8_t cs = calculateCs_();
       if (cs != cs_) {
         err_ = FrameParseErr::kCheckError;
@@ -308,9 +309,13 @@ public:
    */
   FrameParseErr error() { return err_; }
   LinkLayerFrame toLinkLayerFrame() const {
-    LinkLayerFrame frame(ctrlDomain_, address_, asdu_);
+    LinkLayerFrame frame;
     if (isE5Frame_) {
       frame.setSlaveLevel12UserDataIsEmpty();
+    } else if (isFixedFrame_) {
+      frame = LinkLayerFrame(ctrlDomain_, address_);
+    } else {
+      frame = LinkLayerFrame(ctrlDomain_, address_, asdu_);
     }
     return frame;
   }
