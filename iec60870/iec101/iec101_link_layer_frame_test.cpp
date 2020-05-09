@@ -22,6 +22,16 @@ TEST(LinkLayer, frame_encode_variableframe) {
                                0x04, 0x01, 0x00, 0x00, 0x00, 0x55, 0x16));
 }
 
+TEST(LinkLayer, frame_decode_e5_works_well) {
+  LinkLayerFrameCodec codec;
+  LinkLayerFrame frame;
+
+  codec.decode(std::vector<uint8_t>({0xe5}));
+  EXPECT_EQ(codec.error(), FrameParseErr::kNoError);
+  frame = codec.toLinkLayerFrame();
+  EXPECT_EQ(frame.isSlaveLevel12UserDataEmpty(), true);
+}
+
 TEST(LinkLayer, frame_decode_works_well) {
   struct TestCase {
     std::vector<uint8_t> data;

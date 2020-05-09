@@ -135,6 +135,18 @@ public:
     C |= fc;
   }
 
+  void setSlaveLevel12UserDataIsEmpty() {
+    asdu_.clear();
+    isE5Frame_ = true;
+  }
+  /**
+   * @brief If the substation has no level 1 user data and level 2 user data,
+   * return true
+   *
+   * @return
+   */
+  bool isSlaveLevel12UserDataEmpty() const { return isE5Frame_; }
+
   uint8_t ctrlDomain() const { return C; }
 
   /**
@@ -148,7 +160,7 @@ public:
   int address() const { return A; }
 
   std::vector<uint8_t> encode() {
-    bool isFixedFrame = asdu_.empty();
+    bool isFixedFrame = asdu_.empty() && !isE5Frame_;
     std::vector<uint8_t> raw;
     if (isFixedFrame) {
       raw.push_back(0x10);
@@ -156,6 +168,8 @@ public:
       raw.push_back(static_cast<uint8_t>(A));
       raw.push_back(C + A); /// cs
       raw.push_back(0x16);
+    } else if (isE5Frame_) {
+      raw.push_back(0xe5);
     } else {
       raw.push_back(0x68);
       uint8_t len = 2 + asdu_.size();
@@ -179,7 +193,8 @@ private:
   uint8_t C = 0x00;
   uint16_t A = kInvalidA;
   std::vector<uint8_t> asdu_;
-};
+  bool isE5Frame_ = false;
+}; // namespace p101
 
 class LinkLayerFrameCodec {
   enum State {
@@ -215,6 +230,10 @@ public:
         } else if (ch == 0x68) {
           isFixedFrame_ = false;
           state_ = kLengthOffset0;
+        } else if (ch == 0xe5) {
+          isE5Frame_ = true;
+          err_ = FrameParseErr::kNoError;
+          state_ = kDone;
         } else {
           err_ = FrameParseErr::kBadFormat;
           state_ = kDone;
@@ -289,7 +308,11 @@ public:
    */
   FrameParseErr error() { return err_; }
   LinkLayerFrame toLinkLayerFrame() const {
-    return LinkLayerFrame(ctrlDomain_, 3, asdu_);
+    LinkLayerFrame frame(ctrlDomain_, address_, asdu_);
+    if (isE5Frame_) {
+      frame.setSlaveLevel12UserDataIsEmpty();
+    }
+    return frame;
   }
 
 private:
@@ -308,6 +331,7 @@ private:
   uint8_t length_[2];
   uint8_t cs_;
   std::vector<uint8_t> asdu_;
+  bool isE5Frame_ = false;
 
   /// internal
   FrameParseErr err_ = FrameParseErr::kNeedMoreData;
