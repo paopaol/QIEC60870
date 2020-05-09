@@ -230,7 +230,12 @@ public:
       } break;
       case kLengthOffset1: {
         length_[1] = ch;
-        state_ = kSecond68;
+        if (length_[0] != length_[1]) {
+          err_ = FrameParseErr::kCheckError;
+          state_ = kDone;
+        } else {
+          state_ = kSecond68;
+        }
       } break;
       case kSecond68: {
         if (ch != 0x68) {
