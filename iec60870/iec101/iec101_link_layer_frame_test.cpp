@@ -32,6 +32,14 @@ TEST(LinkLayer, frame_decode_e5_works_well) {
   EXPECT_EQ(frame.isSlaveLevel12UserDataEmpty(), true);
 }
 
+TEST(LinkLayer, frame_encode_e5_workl_well) {
+  LinkLayerFrame frame;
+  frame.setSlaveLevel12UserDataIsEmpty();
+
+  auto raw = frame.encode();
+  EXPECT_THAT(raw, ElementsAre(0xe5));
+}
+
 TEST(LinkLayer, frame_decode_works_well) {
   struct TestCase {
     std::vector<uint8_t> data;
