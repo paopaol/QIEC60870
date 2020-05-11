@@ -51,7 +51,7 @@ public:
 
   LinkLayerFrame(uint8_t c, uint16_t a,
                  const std::vector<uint8_t> &asdu = std::vector<uint8_t>())
-      : C(c), A(a), asdu_(asdu) {}
+      : C(c), slaveAddress_(a), asdu_(asdu) {}
 
   /**
    * @brief PRM
@@ -157,7 +157,7 @@ public:
   bool hasAsdu() { return !asdu_.empty(); }
 
   std::vector<uint8_t> asdu() const { return asdu_; }
-  int address() const { return A; }
+  int slaveAddress() const { return slaveAddress_; }
 
   std::vector<uint8_t> encode() {
     bool isFixedFrame = asdu_.empty() && !isE5Frame_;
@@ -165,8 +165,8 @@ public:
     if (isFixedFrame) {
       raw.push_back(0x10);
       raw.push_back(C);
-      raw.push_back(static_cast<uint8_t>(A));
-      raw.push_back(C + A); /// cs
+      raw.push_back(static_cast<uint8_t>(slaveAddress_));
+      raw.push_back(C + slaveAddress_); /// cs
       raw.push_back(0x16);
     } else if (isE5Frame_) {
       raw.push_back(0xe5);
@@ -177,9 +177,9 @@ public:
       raw.push_back(len);
       raw.push_back(0x68);
       raw.push_back(C);
-      raw.push_back(static_cast<uint8_t>(A));
+      raw.push_back(static_cast<uint8_t>(slaveAddress_));
       raw.insert(raw.end(), asdu_.begin(), asdu_.end());
-      uint8_t cs = C + A;
+      uint8_t cs = C + slaveAddress_;
       for (const auto &ch : asdu_) {
         cs += ch;
       }
@@ -191,7 +191,7 @@ public:
 
 private:
   uint8_t C = 0x00;
-  uint16_t A = kInvalidA;
+  uint16_t slaveAddress_ = kInvalidA;
   std::vector<uint8_t> asdu_;
   bool isE5Frame_ = false;
 }; // namespace p101
@@ -266,7 +266,7 @@ public:
         }
       } break;
       case kAddressOffset0: {
-        address_ = ch;
+        slaveAddress_ = ch;
         state_ = isFixedFrame_ ? kCs : kAsdu;
       } break;
       case kAsdu: {
@@ -313,9 +313,9 @@ public:
     if (isE5Frame_) {
       frame.setSlaveLevel12UserDataIsEmpty();
     } else if (isFixedFrame_) {
-      frame = LinkLayerFrame(ctrlDomain_, address_);
+      frame = LinkLayerFrame(ctrlDomain_, slaveAddress_);
     } else {
-      frame = LinkLayerFrame(ctrlDomain_, address_, asdu_);
+      frame = LinkLayerFrame(ctrlDomain_, slaveAddress_, asdu_);
     }
     return frame;
   }
@@ -324,7 +324,7 @@ private:
   uint8_t calculateCs_() {
     uint8_t cs = 0;
     cs += ctrlDomain_;
-    cs += address_;
+    cs += slaveAddress_;
     for (const auto &ch : asdu_) {
       cs += ch;
     }
@@ -332,7 +332,7 @@ private:
   }
 
   uint8_t ctrlDomain_;
-  uint8_t address_;
+  uint8_t slaveAddress_;
   uint8_t length_[2];
   uint8_t cs_;
   std::vector<uint8_t> asdu_;
