@@ -37,8 +37,8 @@ enum class SlaveFunction {
   kResponseLinkStatus = 11,
 };
 
-const int kInvalidA = 0x00;
-const int kBroadcastA = 0xffff;
+const int kInvalidSlaveAddress = 0x00;
+const int kBroadcastSlaveAddress = 0xffff;
 
 /**
  * @brief Can describe both fixed frames and variable-length frames
@@ -191,7 +191,7 @@ public:
 
 private:
   uint8_t C = 0x00;
-  uint16_t slaveAddress_ = kInvalidA;
+  uint16_t slaveAddress_ = kInvalidSlaveAddress;
   std::vector<uint8_t> asdu_;
   bool isE5Frame_ = false;
 }; // namespace p101

@@ -128,7 +128,7 @@ TEST(LinkLayer, frameCodec_toLinkLayerFrame_workswell) {
 }
 
 TEST(LinkLayer, frame_ctrlDomain_check_workswell) {
-  LinkLayerFrame frame(0x53 /*0101,0011*/, kInvalidA);
+  LinkLayerFrame frame(0x53 /*0101,0011*/, kInvalidSlaveAddress);
 
   EXPECT_EQ(frame.isFromStartupStation(), true);
   EXPECT_EQ(frame.isValidFCB(), true);
